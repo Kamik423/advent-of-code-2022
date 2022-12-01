@@ -1,0 +1,6 @@
+._*
+__pycache__
+COOKIE.txt
+.DS_Store
+
+*.lprof

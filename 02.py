@@ -15,14 +15,14 @@ class Hand(Enum):
 
     @classmethod
     def from_letter(cls, letter: str) -> Hand:
-        return {
-            "A": Hand.ROCK,
-            "B": Hand.PAPER,
-            "C": Hand.SCISSORS,
-            "X": Hand.ROCK,
-            "Y": Hand.PAPER,
-            "Z": Hand.SCISSORS,
-        }[letter]
+        match letter:
+            case c if c in ["A", "X"]:
+                return Hand.ROCK
+            case c if c in ["B", "Y"]:
+                return Hand.PAPER
+            case c if c in ["C", "Z"]:
+                return Hand.SCISSORS
+        assert False
 
     @property
     def base_score(self) -> int:
@@ -67,11 +67,6 @@ class Game:
 
 def main(timer: aoc.Timer) -> None:
     games = [[Hand.from_letter(c) for c in lne.split(" ")] for lne in aoc.get_lines(2)]
-    # games = [
-    #     "A Y",
-    #     "B X",
-    #     "C Z",
-    # ]
     print(sum((a @ b).total_game_score for a, b in games))
     timer.mark()
     print(

@@ -29,7 +29,7 @@ class Hand(Enum):
         return {Hand.ROCK: 1, Hand.PAPER: 2, Hand.SCISSORS: 3}[self]
 
     def move_according_to(self, rule: Hand) -> Hand:
-        return self + {Hand.ROCK: -1, Hand.PAPER: 0, Hand.SCISSORS: 1}[rule]
+        return self + (rule.base_score - 2)
 
     def __matmul__(self, other: Hand) -> Game:
         return Game(self, other)

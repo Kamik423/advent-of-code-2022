@@ -50,10 +50,11 @@ This module also provides timer functionality. Read the documentation for Timer
 below.
 
 Attributes:
-    CACHE_DIRECTORY (TYPE): The directory to put the daily inputs in.
+    CACHE_DIRECTORY (Path): The directory to put the daily inputs in.
     CACHE_FILE_NAME_TEMPLATE (str): The name template for daily cache files.
-    COOKIE_PATH (TYPE): The computed path to the cookie file.
-    PROJECT_FOLDER (TYPE): The computed directory the main file is in.
+    COOKIE_PATH (Path): The computed path to the cookie file.
+    MOCKS (dict[int | None, bytes]): Mocked inputs for testing.
+    PROJECT_FOLDER (Path): The computed directory the main file is in.
     URL (str): A format url for a given day.
 """
 
@@ -73,6 +74,7 @@ COOKIE_PATH = PROJECT_FOLDER / "COOKIE.txt"
 URL = "https://adventofcode.com/2022/day/{}/input"
 CACHE_FILE_NAME_TEMPLATE = "{:02d}.txt"
 CACHE_DIRECTORY = PROJECT_FOLDER / "input"
+MOCKS: dict[int | None, bytes] = {}
 
 # ==============================================================================
 # General functions to interface with AOC and fetch files
@@ -127,7 +129,11 @@ def get(day: int | None = None) -> bytes:
     Returns:
         bytes: The input for they day.
     """
+    if (mocked := MOCKS.get(None)) is not None:
+        return mocked
     day = day or guess_day_from_filename()
+    if (mocked := MOCKS.get(day)) is not None:
+        return mocked
     ensure_downloaded(day)
     return cache_file_for_day(day).read_bytes()
 
@@ -144,9 +150,7 @@ def get_str(day: int | None = None) -> str:
     Returns:
         str: The input for the day.
     """
-    day = day or guess_day_from_filename()
-    ensure_downloaded(day)
-    return cache_file_for_day(day).read_text()
+    return get(day).decode("utf8")
 
 
 def get_lines(day: int | None = None) -> list[str]:
@@ -161,8 +165,31 @@ def get_lines(day: int | None = None) -> list[str]:
     Returns:
         list[str]: The lines.
     """
-    day = day or guess_day_from_filename()
     return get_str(day).strip().split("\n")
+
+
+# ==============================================================================
+# Mocking inputs
+
+
+def mock_bytes(data: bytes, day: int | None = None) -> None:
+    """Mock a bytes content for a given day or any.
+
+    Args:
+        content (str): The mocked bytes message.
+        day (int | None, optional): The day to mock for; otherwise mock all.
+    """
+    MOCKS[day] = data
+
+
+def mock(content: str, day: int | None = None) -> None:
+    """Mock a string content for a given day or any.
+
+    Args:
+        content (str): The mocked string message.
+        day (int | None, optional): The day to mock for; otherwise mock all.
+    """
+    mock_bytes(content.encode("utf8"), day)
 
 
 # ==============================================================================

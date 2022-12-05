@@ -271,7 +271,7 @@ class Parse:
 
         For example
 
-            foo = aoc.Parse().regex(r"(\d+) => (.+)", (int, str)).get()
+            foo = aoc.Parse().regex_lines(r"(\d+) => (.+)", (int, str)).get()
 
         would parse a file that looks like
 

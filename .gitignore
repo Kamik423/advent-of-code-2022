@@ -3,4 +3,6 @@ __pycache__
 COOKIE.txt
 .DS_Store
 
+input/*
+
 *.lprof

@@ -23,6 +23,8 @@ def main(timer: aoc.Timer) -> None:
         for block in aoc.get_str().split("\n\n")
     ]
 
+    timer.mark("Preprocessing")
+
     def order(left: Package, right: Package) -> Order:
         if isinstance(left, int) and isinstance(right, int):
             if left == right:

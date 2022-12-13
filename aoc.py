@@ -33,7 +33,7 @@ day manually.
 
 Complex queries are possible, read the documentation for Parse below.
 
-    foo, bar = aoc.Parse().comma_integers().regex(r"(\d+) => (.+)", (int, str))
+    foo, bar = aoc.Parse().comma_integers().regex_lines(r"(\d+) => (.+)", (int, str))
 
 would parse a file that looks like
 

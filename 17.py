@@ -56,16 +56,23 @@ def main(timer: aoc.Timer) -> None:
             bool: Has the piece stopped
         """
         if command == ">":
+            # If the pieces covers the right column or the shifted piece would
+            # intersect with the tower (shifted bit + and = intersect) then do
+            # # not do the shift. Otherwise move the bit over (=bitshift)
             if not any(line & 0b0000001 for line in piece) and not any(
                 (pl >> 1) & tl for (pl, tl) in zip(piece, tower)
             ):
                 piece = tuple((line >> 1 for line in piece))
-        else:
+        else:  # command == "<"
             if not any(line & 0b1000000 for line in piece) and not any(
                 (pl << 1) & tl for (pl, tl) in zip(piece, tower)
             ):
                 piece = tuple((line << 1 for line in piece))
         if (
+            # If the piece intersects a bit of tower in the line below then stop
+            # and mark end of dropping. Tower and piece are zipped but tower is
+            # offset by one by putting a full byte at the bottom. This also acts
+            # as bottom detection for the piece in the first loop.
             any(
                 t & p
                 for t, p in zip_longest([0b1111111] + list(tower), piece, fillvalue=0)
@@ -95,21 +102,27 @@ def main(timer: aoc.Timer) -> None:
             State: The state after the drop. (Tower, Piece index, Command index)
             int: The height added to the tower in the process
         """
+        # The piece has 0-filled lines for the entire tower and the three empty
+        # lines and then the piece itself.
         piece = tuple([0] * len(tower) + [0, 0, 0] + ROCKS[piece_index])
         terminated = False
+        # Drop until the loop terminates by the piece hitting the tower.
         while not terminated:
             piece, terminated = simulate_single_step(
                 tower, piece, commands[command_index]
             )
             command_index = (command_index + 1) % len(commands)
+        # Overlay the piece and the tower. Iterate over both and binary-or them.
         new_tower = tuple([t | p for t, p in zip_longest(tower, piece, fillvalue=0)])
         return (
             (
-                new_tower[-TOWER_CUTOFF_LENGTH:],
-                (piece_index + 1) % len(ROCKS),
+                new_tower[-TOWER_CUTOFF_LENGTH:],  # Truncate the tower
+                (piece_index + 1) % len(ROCKS),  # Increment the piece index
                 command_index,
             ),
-            len(new_tower) - len(tower),
+            len(new_tower) - len(tower),  # The amount of added lines can be
+            # easily computed from the lines added to the tower variable over
+            # the process. This is the variable before truncation.
         )
 
     @cache
@@ -138,11 +151,12 @@ def main(timer: aoc.Timer) -> None:
             height += delta_height
         return (state, height)
 
+    # Part 1
     _, height = simulate_pieces(2022)
     print(height)
 
+    # Part 2
     timer.mark()
-
     total = 1000000000000
     stepsize = 100_000
     # I tried and this seems to be the optimal power of 10. The number needs to

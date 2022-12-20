@@ -8,6 +8,7 @@ from enum import Enum, auto
 from functools import cache, reduce
 
 import aoc
+from cached_property import cached_property
 from joblib import Parallel, delayed
 
 mul = lambda l: reduce((lambda x, y: x * y), l)
@@ -22,6 +23,15 @@ class Blueprint:
     obsidian_robot_clay_cost: int
     geode_robot_ore_cost: int
     geode_robot_obsidian_cost: int
+
+    @cached_property
+    def maximal_ore_costs(self) -> int:
+        return max(
+            self.ore_robot_ore_cost,
+            self.clay_robot_ore_cost,
+            self.obsidian_robot_ore_cost,
+            self.geode_robot_ore_cost,
+        )
 
 
 class Robot(Enum):
@@ -97,12 +107,7 @@ def main(timer: aoc.Timer) -> None:
         @property
         def should_still_construct_ore_robot(self) -> bool:
             blueprint = self.blueprint
-            return self.ore_robot_count < max(
-                blueprint.ore_robot_ore_cost,
-                blueprint.clay_robot_ore_cost,
-                blueprint.obsidian_robot_ore_cost,
-                blueprint.geode_robot_ore_cost,
-            )
+            return self.ore_robot_count < blueprint.maximal_ore_costs
 
         @property
         def should_still_construct_clay_robot(self) -> bool:
@@ -163,7 +168,11 @@ def main(timer: aoc.Timer) -> None:
 
             if self.can_construct_geode_robot:
                 return [Robot.GEODE]
+            # # This would be a massive speedup (x16) but unfortunately it fails
+            # # on part 2. on part 1 it is fine.
             # if self.can_construct_obsidian_robot:
+            #     if self.will_be_able_to_construct_geode_ever:
+            #         return [Robot.GEODE, Robot.OBSIDIAN]
             #     return [Robot.OBSIDIAN]
             return (
                 ([Robot.GEODE] if self.will_be_able_to_construct_geode_ever else [])
